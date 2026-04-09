@@ -1,0 +1,71 @@
+{
+  "name": "copy-relative-path-and-line-numbers",
+  "displayName": "Copy: Relative Path and Selection",
+  "description": "Copy relative paths or selected code as AI-ready context (path:start-end plus code block). Supports multi-cursor selections.",
+  "version": "0.0.1",
+  "publisher": "jqtmviyu",
+  "repository": {},
+  "icon": "images/icon.png",
+  "extensionKind": [
+    "workspace"
+  ],
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "keywords": [
+    "copy",
+    "file path",
+    "line number",
+    "clipboard"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:copy-relative-path-and-line-numbers.both",
+    "onCommand:copy-relative-path-and-line-numbers.path-only"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copy-relative-path-and-line-numbers.both",
+        "title": "Copy: Selection"
+      },
+      {
+        "command": "copy-relative-path-and-line-numbers.path-only",
+        "title": "Copy: Relative Path"
+      }
+    ],
+    "menus": {
+      "editor/title/context": [
+        {
+          "command": "copy-relative-path-and-line-numbers.both"
+        },
+        {
+          "command": "copy-relative-path-and-line-numbers.path-only"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "copy-relative-path-and-line-numbers.both"
+        },
+        {
+          "command": "copy-relative-path-and-line-numbers.path-only"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "typescript": "^2.6.1",
+    "vscode": "^1.1.6",
+    "eslint": "^4.11.0",
+    "@types/node": "^7.0.43",
+    "@types/mocha": "^2.2.42"
+  },
+  "dependencies": {}
+}
