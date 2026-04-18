@@ -40,3 +40,5 @@
 # claude
 CLAUDE.md
 AGENT.md
+*.vsix
+.claude
