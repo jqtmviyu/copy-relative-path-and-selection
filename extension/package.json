@@ -1,8 +1,8 @@
 {
   "name": "copy-relative-path-and-line-numbers",
   "displayName": "Copy: Relative Path and Selection",
-  "description": "Copy relative paths or selected code as AI-ready context (path:start-end plus code block). Supports multi-cursor selections.",
-  "version": "0.0.1",
+  "description": "Copy relative paths or selected code as AI-ready context (path:start-end plus code block). Supports multi-cursor and multi-file selections.",
+  "version": "0.0.2",
   "publisher": "jqtmviyu",
   "repository": {},
   "icon": "images/icon.png",
@@ -22,6 +22,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:copy-relative-path-and-line-numbers.both",
     "onCommand:copy-relative-path-and-line-numbers.path-only"
   ],

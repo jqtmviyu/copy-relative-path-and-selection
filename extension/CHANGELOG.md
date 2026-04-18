@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.2
+
+- Add support for collecting the latest non-empty selections across multiple workspace files before copying
+- Ignore untitled files and files outside the workspace when caching selections
+- Clear cached selections when a file closes or after copying
+
 ## 0.0.1
 
 Forked from ezforo's Copy Relative Path and Line Numbers (v0.3.1).

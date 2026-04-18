@@ -5,82 +5,166 @@ const vscode = require("vscode");
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
-  let copyPathLines = function (withLineNumber = false) {
-    let alertMessage = "File path not found!";
-    if (!vscode.workspace.rootPath) {
-      vscode.window.showWarningMessage(alertMessage);
-      return false;
-    }
+  let alertMessage = "File path not found!";
+  let selectionCache = new Map();
 
-    let editor = vscode.window.activeTextEditor;
+  let getEditorState = function (editor) {
     if (!editor) {
-      vscode.window.showWarningMessage(alertMessage);
       return false;
     }
 
     let doc = editor.document;
     if (doc.isUntitled) {
-      vscode.window.showWarningMessage(alertMessage);
       return false;
     }
 
-    let path = vscode.workspace.asRelativePath(doc.fileName);
+    let folder = vscode.workspace.getWorkspaceFolder(doc.uri);
+    if (!folder) {
+      return false;
+    }
 
-    if (withLineNumber) {
-      let ranges = [];
+    return {
+      key: doc.uri.toString(),
+      doc,
+      path: vscode.workspace.asRelativePath(doc.uri),
+    };
+  };
 
-      editor.selections.forEach((selection) => {
-        let startLine = selection.start.line;
-        let endLine = selection.end.line;
+  let getRanges = function (selections, includeEmptySelection = false) {
+    let ranges = [];
 
-        if (selection.isEmpty) {
-          startLine = selection.active.line;
-          endLine = selection.active.line;
-        } else if (
-          selection.end.character === 0 &&
-          selection.end.line > selection.start.line
-        ) {
-          // 当按“整行”方式选择多行时，VS Code 的 selection.end 可能指向“下一行的开头”。
-          // 这里将 endLine 往回减 1，确保拿到实际选区的最后一行。
-          endLine = selection.end.line - 1;
-        }
+    selections.forEach((selection) => {
+      let startLine = selection.start.line;
+      let endLine = selection.end.line;
 
-        ranges.push({ start: startLine + 1, end: endLine + 1 });
-      });
-
-      ranges.sort((a, b) => a.start - b.start || a.end - b.end);
-
-      // 合并重叠/相邻的选区：比如 5、6、7 行合并为 5-7。
-      let merged = [];
-      ranges.forEach((range) => {
-        let last = merged[merged.length - 1];
-        if (!last) {
-          merged.push({ ...range });
+      if (selection.isEmpty) {
+        if (!includeEmptySelection) {
           return;
         }
 
-        if (range.start <= last.end + 1) {
-          last.end = Math.max(last.end, range.end);
-        } else {
-          merged.push({ ...range });
-        }
-      });
+        startLine = selection.active.line;
+        endLine = selection.active.line;
+      } else if (
+        selection.end.character === 0 &&
+        selection.end.line > selection.start.line
+      ) {
+        // 当按“整行”方式选择多行时，VS Code 的 selection.end 可能指向“下一行的开头”。
+        // 这里将 endLine 往回减 1，确保拿到实际选区的最后一行。
+        endLine = selection.end.line - 1;
+      }
 
-      let blocks = merged.map((range) => {
-        let header = `${path}:${range.start}-${range.end}`;
+      ranges.push({ start: startLine + 1, end: endLine + 1 });
+    });
+
+    ranges.sort((a, b) => a.start - b.start || a.end - b.end);
+
+    // 合并重叠/相邻的选区：比如 5、6、7 行合并为 5-7。
+    let merged = [];
+    ranges.forEach((range) => {
+      let last = merged[merged.length - 1];
+      if (!last) {
+        merged.push({ ...range });
+        return;
+      }
+
+      if (range.start <= last.end + 1) {
+        last.end = Math.max(last.end, range.end);
+      } else {
+        merged.push({ ...range });
+      }
+    });
+
+    return merged;
+  };
+
+  let getSelectionEntry = function (editor, includeEmptySelection = false) {
+    let state = getEditorState(editor);
+    if (!state) {
+      return false;
+    }
+
+    let ranges = getRanges(editor.selections, includeEmptySelection);
+    if (!ranges.length) {
+      return false;
+    }
+
+    return {
+      ...state,
+      ranges,
+      updatedAt: Date.now(),
+    };
+  };
+
+  let buildBlocks = function (entry) {
+    return entry.ranges
+      .map((range) => {
+        let header = `${entry.path}:${range.start}-${range.end}`;
 
         let codeLines = [];
         for (let line = range.start; line <= range.end; line++) {
-          codeLines.push(doc.lineAt(line - 1).text);
+          codeLines.push(entry.doc.lineAt(line - 1).text);
         }
 
         let code = codeLines.join("\n");
         return `${header}\n\`\`\`\n${code}\n\`\`\`\n`;
-      });
+      })
+      .join("\n");
+  };
+
+  let syncSelectionCache = function (editor) {
+    if (!editor) {
+      return;
+    }
+
+    let key = editor.document.uri.toString();
+    let entry = getSelectionEntry(editor);
+
+    if (!entry) {
+      selectionCache.delete(key);
+      return;
+    }
+
+    selectionCache.set(key, entry);
+  };
+
+  let copyPathLines = function (withLineNumber = false) {
+    let editor = vscode.window.activeTextEditor;
+
+    if (withLineNumber) {
+      let entries = new Map(selectionCache);
+      let activeEntry = getSelectionEntry(editor);
+
+      if (activeEntry) {
+        let cachedEntry = entries.get(activeEntry.key);
+        if (cachedEntry) {
+          activeEntry.updatedAt = cachedEntry.updatedAt;
+        }
+        entries.set(activeEntry.key, activeEntry);
+      } else {
+        let temporaryEntry = getSelectionEntry(editor, true);
+        if (temporaryEntry) {
+          entries.set(temporaryEntry.key, temporaryEntry);
+        }
+      }
+
+      let blocks = Array.from(entries.values())
+        .sort((a, b) => a.updatedAt - b.updatedAt)
+        .map((entry) => buildBlocks(entry));
+
+      if (!blocks.length) {
+        vscode.window.showWarningMessage(alertMessage);
+        return false;
+      }
 
       return blocks.join("\n");
     } else {
-      return path;
+      let state = getEditorState(editor);
+      if (!state) {
+        vscode.window.showWarningMessage(alertMessage);
+        return false;
+      }
+
+      return state.path;
     }
   };
 
@@ -97,6 +181,16 @@ function activate(context) {
     'Congratulations, your extension "copy-relative-path-and-line-numbers" is now active!'
   );
 
+  let onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
+    (event) => {
+      syncSelectionCache(event.textEditor);
+    }
+  );
+
+  let onDidCloseTextDocument = vscode.workspace.onDidCloseTextDocument((doc) => {
+    selectionCache.delete(doc.uri.toString());
+  });
+
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
@@ -106,6 +200,7 @@ function activate(context) {
       let message = copyPathLines(true);
       if (message !== false) {
         vscode.env.clipboard.writeText(message).then(() => {
+          selectionCache.clear();
           toast(message);
         });
       }
@@ -124,7 +219,12 @@ function activate(context) {
     }
   );
 
-  context.subscriptions.push(cmdBoth, cmdPathOnly);
+  context.subscriptions.push(
+    onDidChangeTextEditorSelection,
+    onDidCloseTextDocument,
+    cmdBoth,
+    cmdPathOnly
+  );
 }
 exports.activate = activate;
 
