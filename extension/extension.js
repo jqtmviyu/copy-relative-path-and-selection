@@ -26,7 +26,8 @@ function activate(context) {
     return {
       key: doc.uri.toString(),
       doc,
-      path: vscode.workspace.asRelativePath(doc.uri),
+      relativePath: vscode.workspace.asRelativePath(doc.uri),
+      absolutePath: doc.uri.fsPath,
     };
   };
 
@@ -95,10 +96,11 @@ function activate(context) {
     };
   };
 
-  let buildBlocks = function (entry) {
+  let buildBlocks = function (entry, useAbsolutePath = false) {
     return entry.ranges
       .map((range) => {
-        let header = `${entry.path}:${range.start}-${range.end}`;
+        let path = useAbsolutePath ? entry.absolutePath : entry.relativePath;
+        let header = `${path}:${range.start}-${range.end}`;
 
         let codeLines = [];
         for (let line = range.start; line <= range.end; line++) {
@@ -127,7 +129,7 @@ function activate(context) {
     selectionCache.set(key, entry);
   };
 
-  let copyPathLines = function (withLineNumber = false) {
+  let copyPathLines = function (withLineNumber = false, useAbsolutePath = false) {
     let editor = vscode.window.activeTextEditor;
 
     if (withLineNumber) {
@@ -149,7 +151,7 @@ function activate(context) {
 
       let blocks = Array.from(entries.values())
         .sort((a, b) => a.updatedAt - b.updatedAt)
-        .map((entry) => buildBlocks(entry));
+        .map((entry) => buildBlocks(entry, useAbsolutePath));
 
       if (!blocks.length) {
         vscode.window.showWarningMessage(alertMessage);
@@ -164,7 +166,7 @@ function activate(context) {
         return false;
       }
 
-      return state.path;
+      return useAbsolutePath ? state.absolutePath : state.relativePath;
     }
   };
 
@@ -194,10 +196,10 @@ function activate(context) {
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
-  let cmdBoth = vscode.commands.registerCommand(
-    "copy-relative-path-and-line-numbers.both",
+  let cmdAbsoluteSelection = vscode.commands.registerCommand(
+    "copy-relative-path-and-line-numbers.absolute-selection",
     () => {
-      let message = copyPathLines(true);
+      let message = copyPathLines(true, true);
       if (message !== false) {
         vscode.env.clipboard.writeText(message).then(() => {
           selectionCache.clear();
@@ -207,12 +209,13 @@ function activate(context) {
     }
   );
 
-  let cmdPathOnly = vscode.commands.registerCommand(
-    "copy-relative-path-and-line-numbers.path-only",
+  let cmdRelativeSelection = vscode.commands.registerCommand(
+    "copy-relative-path-and-line-numbers.relative-selection",
     () => {
-      let message = copyPathLines();
+      let message = copyPathLines(true, false);
       if (message !== false) {
         vscode.env.clipboard.writeText(message).then(() => {
+          selectionCache.clear();
           toast(message);
         });
       }
@@ -222,8 +225,8 @@ function activate(context) {
   context.subscriptions.push(
     onDidChangeTextEditorSelection,
     onDidCloseTextDocument,
-    cmdBoth,
-    cmdPathOnly
+    cmdAbsoluteSelection,
+    cmdRelativeSelection
   );
 }
 exports.activate = activate;

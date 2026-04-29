@@ -1,15 +1,15 @@
-# Copy: Relative Path and Selection
+# Copy: Selection and Relative Selection
 
-Copy relative paths or selected code as AI-ready context.
+Copy selected code as AI-ready context with absolute or relative paths.
 
 Accessible through right-click menu items in editor tabs and the editor window, or via the Command Palette (Ctrl+Shift+P / ⇧⌘P).
 
 ## Commands
 
-- **Copy: Relative Path** (`copy-relative-path-and-line-numbers.path-only`)
-  - Output: `relative/path/to/file`
+- **Copy: Selection** (`copy-relative-path-and-line-numbers.absolute-selection`)
+  - Output: `absolute/path/to/file:start-end` followed by a code block containing the selected lines
 
-- **Copy: Selection** (`copy-relative-path-and-line-numbers.both`)
+- **Copy: Selection (Relative)** (`copy-relative-path-and-line-numbers.relative-selection`)
   - Output: `relative/path/to/file:start-end` followed by a code block containing the selected lines
   - Supports multi-cursor and multi-selection; non-contiguous selections are output as separate blocks
   - Supports collecting the latest non-empty selections across multiple workspace files before copying
@@ -17,10 +17,21 @@ Accessible through right-click menu items in editor tabs and the editor window, 
 
 ### Example (Copy: Selection)
 
-#### Single file, contiguous selection
+#### Single file, contiguous selection (relative)
 
 ````markdown
 src/utils/auth.js:43-46
+```
+function isExpired(token) {
+  return token.exp <= Date.now();
+}
+```
+````
+
+#### Single file, contiguous selection (absolute)
+
+````markdown
+/workspace/project/src/utils/auth.js:43-46
 ```
 function isExpired(token) {
   return token.exp <= Date.now();

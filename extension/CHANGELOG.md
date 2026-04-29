@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3
+
+- Replace `Copy: Relative Path` with `Copy: Selection (Relative)`
+- Make `Copy: Selection` copy selected code with absolute file paths
+- Keep relative-path selection copying under the new `Copy: Selection (Relative)` command
+
 ## 0.0.2
 
 - Add support for collecting the latest non-empty selections across multiple workspace files before copying

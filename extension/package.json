@@ -1,8 +1,8 @@
 {
   "name": "copy-relative-path-and-line-numbers",
-  "displayName": "Copy: Relative Path and Selection",
-  "description": "Copy relative paths or selected code as AI-ready context (path:start-end plus code block). Supports multi-cursor and multi-file selections.",
-  "version": "0.0.2",
+  "displayName": "Copy: Selection and Relative Selection",
+  "description": "Copy selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-file selections.",
+  "version": "0.0.3",
   "publisher": "jqtmviyu",
   "repository": {},
   "icon": "images/icon.png",
@@ -23,36 +23,36 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:copy-relative-path-and-line-numbers.both",
-    "onCommand:copy-relative-path-and-line-numbers.path-only"
+    "onCommand:copy-relative-path-and-line-numbers.absolute-selection",
+    "onCommand:copy-relative-path-and-line-numbers.relative-selection"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "copy-relative-path-and-line-numbers.both",
+        "command": "copy-relative-path-and-line-numbers.absolute-selection",
         "title": "Copy: Selection"
       },
       {
-        "command": "copy-relative-path-and-line-numbers.path-only",
-        "title": "Copy: Relative Path"
+        "command": "copy-relative-path-and-line-numbers.relative-selection",
+        "title": "Copy: Selection (Relative)"
       }
     ],
     "menus": {
       "editor/title/context": [
         {
-          "command": "copy-relative-path-and-line-numbers.both"
+          "command": "copy-relative-path-and-line-numbers.absolute-selection"
         },
         {
-          "command": "copy-relative-path-and-line-numbers.path-only"
+          "command": "copy-relative-path-and-line-numbers.relative-selection"
         }
       ],
       "editor/context": [
         {
-          "command": "copy-relative-path-and-line-numbers.both"
+          "command": "copy-relative-path-and-line-numbers.absolute-selection"
         },
         {
-          "command": "copy-relative-path-and-line-numbers.path-only"
+          "command": "copy-relative-path-and-line-numbers.relative-selection"
         }
       ]
     }
