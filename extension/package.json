@@ -1,8 +1,8 @@
 {
   "name": "copy-relative-path-and-line-numbers",
-  "displayName": "Copy: Selection and Relative Selection",
-  "description": "Copy selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-file selections.",
-  "version": "0.0.3",
+  "displayName": "Copy: Path and Selection",
+  "description": "Copy current file paths or selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-file selections.",
+  "version": "0.0.4",
   "publisher": "jqtmviyu",
   "repository": {},
   "icon": "images/icon.png",
@@ -24,35 +24,47 @@
   "activationEvents": [
     "onStartupFinished",
     "onCommand:copy-relative-path-and-line-numbers.absolute-selection",
-    "onCommand:copy-relative-path-and-line-numbers.relative-selection"
+    "onCommand:copy-relative-path-and-line-numbers.relative-selection",
+    "onCommand:copy-relative-path-and-line-numbers.absolute-path",
+    "onCommand:copy-relative-path-and-line-numbers.relative-path"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "copy-relative-path-and-line-numbers.absolute-selection",
-        "title": "Copy: Selection"
+        "command": "copy-relative-path-and-line-numbers.relative-path",
+        "title": "Copy: Path"
+      },
+      {
+        "command": "copy-relative-path-and-line-numbers.absolute-path",
+        "title": "Copy: Path (Absolute)"
       },
       {
         "command": "copy-relative-path-and-line-numbers.relative-selection",
-        "title": "Copy: Selection (Relative)"
+        "title": "Copy: Selection"
+      },
+      {
+        "command": "copy-relative-path-and-line-numbers.absolute-selection",
+        "title": "Copy: Selection (Absolute)"
       }
     ],
     "menus": {
-      "editor/title/context": [
-        {
-          "command": "copy-relative-path-and-line-numbers.absolute-selection"
-        },
-        {
-          "command": "copy-relative-path-and-line-numbers.relative-selection"
-        }
-      ],
       "editor/context": [
         {
-          "command": "copy-relative-path-and-line-numbers.absolute-selection"
+          "command": "copy-relative-path-and-line-numbers.relative-path",
+          "group": "copyRelativePath@1"
         },
         {
-          "command": "copy-relative-path-and-line-numbers.relative-selection"
+          "command": "copy-relative-path-and-line-numbers.relative-selection",
+          "group": "copyRelativePath@2"
+        },
+        {
+          "command": "copy-relative-path-and-line-numbers.absolute-path",
+          "group": "copyRelativePath@3"
+        },
+        {
+          "command": "copy-relative-path-and-line-numbers.absolute-selection",
+          "group": "copyRelativePath@4"
         }
       ]
     }

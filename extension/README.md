@@ -1,19 +1,25 @@
-# Copy: Selection and Relative Selection
+# Copy: Path and Selection
 
-Copy selected code as AI-ready context with absolute or relative paths.
+Copy current file paths or selected code as AI-ready context with absolute or relative paths.
 
-Accessible through right-click menu items in editor tabs and the editor window, or via the Command Palette (Ctrl+Shift+P / ⇧⌘P).
+Accessible through right-click menu items in the editor window, or via the Command Palette (Ctrl+Shift+P / ⇧⌘P).
 
 ## Commands
 
-- **Copy: Selection** (`copy-relative-path-and-line-numbers.absolute-selection`)
-  - Output: `absolute/path/to/file:start-end` followed by a code block containing the selected lines
+- **Copy: Path** (`copy-relative-path-and-line-numbers.relative-path`)
+  - Output: `relative/path/to/file`
 
-- **Copy: Selection (Relative)** (`copy-relative-path-and-line-numbers.relative-selection`)
+- **Copy: Path (Absolute)** (`copy-relative-path-and-line-numbers.absolute-path`)
+  - Output: `absolute/path/to/file`
+
+- **Copy: Selection** (`copy-relative-path-and-line-numbers.relative-selection`)
   - Output: `relative/path/to/file:start-end` followed by a code block containing the selected lines
   - Supports multi-cursor and multi-selection; non-contiguous selections are output as separate blocks
   - Supports collecting the latest non-empty selections across multiple workspace files before copying
   - Ignores untitled files and files outside the workspace; cached selections are cleared when a file closes or after copying
+
+- **Copy: Selection (Absolute)** (`copy-relative-path-and-line-numbers.absolute-selection`)
+  - Output: `absolute/path/to/file:start-end` followed by a code block containing the selected lines
 
 ### Example (Copy: Selection)
 

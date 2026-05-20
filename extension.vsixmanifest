@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="copy-relative-path-and-line-numbers" Version="0.0.1" Publisher="jqtmviyu"/>
-    <DisplayName>Copy: Relative Path and Selection</DisplayName>
-    <Description xml:space="preserve">Copy relative paths or selected code as AI-ready context (path:start-end plus code block). Supports multi-cursor selections; available from editor and explorer context menus.</Description>
+    <Identity Language="en-US" Id="copy-relative-path-and-line-numbers" Version="0.0.4" Publisher="jqtmviyu"/>
+    <DisplayName>Copy: Path and Selection</DisplayName>
+    <Description xml:space="preserve">Copy current file paths or selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-file selections from the editor context menu.</Description>
     <Tags>copy,file path,line number,clipboard,keybindings</Tags>
     <Categories>Other</Categories>
     <GalleryFlags>Public</GalleryFlags>

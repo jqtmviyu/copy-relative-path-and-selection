@@ -222,11 +222,37 @@ function activate(context) {
     }
   );
 
+  let cmdAbsolutePath = vscode.commands.registerCommand(
+    "copy-relative-path-and-line-numbers.absolute-path",
+    () => {
+      let message = copyPathLines(false, true);
+      if (message !== false) {
+        vscode.env.clipboard.writeText(message).then(() => {
+          toast(message);
+        });
+      }
+    }
+  );
+
+  let cmdRelativePath = vscode.commands.registerCommand(
+    "copy-relative-path-and-line-numbers.relative-path",
+    () => {
+      let message = copyPathLines(false, false);
+      if (message !== false) {
+        vscode.env.clipboard.writeText(message).then(() => {
+          toast(message);
+        });
+      }
+    }
+  );
+
   context.subscriptions.push(
     onDidChangeTextEditorSelection,
     onDidCloseTextDocument,
     cmdAbsoluteSelection,
-    cmdRelativeSelection
+    cmdRelativeSelection,
+    cmdAbsolutePath,
+    cmdRelativePath
   );
 }
 exports.activate = activate;

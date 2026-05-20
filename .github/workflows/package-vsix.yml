@@ -1,0 +1,63 @@
+name: Package VSIX
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve version and filename
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PACKAGE_VERSION=$(node -p "require('./extension/package.json').version")
+          REF_NAME="${GITHUB_REF_NAME:-}"
+          TAG_VERSION=""
+
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            TAG_VERSION="${REF_NAME#v}"
+            if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+              echo "Tag version $TAG_VERSION does not match extension/package.json version $PACKAGE_VERSION" >&2
+              exit 1
+            fi
+          fi
+
+          VERSION="${TAG_VERSION:-$PACKAGE_VERSION}"
+          FILE_NAME="copy-relative-path-and-selection-v${VERSION}.vsix"
+
+          echo "package_version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create VSIX archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -r "${{ steps.meta.outputs.file_name }}" "extension" "[Content_Types].xml" "extension.vsixmanifest"
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.file_name }}
+          path: ${{ steps.meta.outputs.file_name }}
+          if-no-files-found: error
+
+      - name: Upload VSIX to GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.meta.outputs.file_name }}

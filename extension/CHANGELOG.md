@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4
+
+- Add `Copy: Path` to copy current file relative path from editor context menu
+- Add `Copy: Path (Absolute)` to copy current file absolute path from editor context menu
+- Rename relative selection command to `Copy: Selection`
+- Rename absolute selection command to `Copy: Selection (Absolute)`
+- Add GitHub Actions workflow to package and publish `.vsix` artifacts on manual runs and tag pushes
+
 ## 0.0.3
 
 - Replace `Copy: Relative Path` with `Copy: Selection (Relative)`
