@@ -1,10 +1,19 @@
 {
   "name": "copy-relative-path-and-line-numbers",
   "displayName": "Copy: Path and Selection",
-  "description": "Copy current file paths or selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-file selections.",
-  "version": "0.0.4",
+  "description": "Copy current file paths or selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-selection within the active file.",
+  "version": "0.0.5",
   "publisher": "jqtmviyu",
-  "repository": {},
+  "author": "jqtmviyu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jqtmviyu/copy-relative-path-and-selection.git"
+  },
+  "homepage": "https://github.com/jqtmviyu/copy-relative-path-and-selection#readme",
+  "bugs": {
+    "url": "https://github.com/jqtmviyu/copy-relative-path-and-selection/issues"
+  },
   "icon": "images/icon.png",
   "extensionKind": [
     "workspace"
@@ -71,14 +80,17 @@
   },
   "scripts": {
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
+    "test": "node ./node_modules/vscode/bin/test",
+    "package": "vsce package",
+    "publish:marketplace": "node -e \"throw new Error('Visual Studio Marketplace publish is temporarily disabled.')\""
   },
   "devDependencies": {
     "typescript": "^2.6.1",
     "vscode": "^1.1.6",
     "eslint": "^4.11.0",
     "@types/node": "^7.0.43",
-    "@types/mocha": "^2.2.42"
+    "@types/mocha": "^2.2.42",
+    "@vscode/vsce": "^3.6.2"
   },
   "dependencies": {}
 }

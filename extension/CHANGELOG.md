@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.5
+
+- Limit selection copying to the active file while keeping multi-selection support within that file
+- Prefix selection output with a blank line for easier pasting into multi-line prompts
+- Switch VSIX packaging to `vsce` and keep GitHub Release uploads while leaving Marketplace publish commented out
+
 ## 0.0.4
 
 - Add `Copy: Path` to copy current file relative path from editor context menu

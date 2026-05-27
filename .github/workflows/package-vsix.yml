@@ -18,6 +18,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Resolve version and filename
         id: meta
         shell: bash
@@ -30,10 +35,6 @@ jobs:
 
           if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
             TAG_VERSION="${REF_NAME#v}"
-            if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-              echo "Tag version $TAG_VERSION does not match extension/package.json version $PACKAGE_VERSION" >&2
-              exit 1
-            fi
           fi
 
           VERSION="${TAG_VERSION:-$PACKAGE_VERSION}"
@@ -43,11 +44,28 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Create VSIX archive
+      - name: Apply tag version to extension package
+        if: github.ref_type == 'tag'
         shell: bash
         run: |
           set -euo pipefail
-          zip -r "${{ steps.meta.outputs.file_name }}" "extension" "[Content_Types].xml" "extension.vsixmanifest"
+          node -e 'const fs = require("fs"); const path = "./extension/package.json"; const pkg = JSON.parse(fs.readFileSync(path, "utf8")); pkg.version = process.env.VERSION; fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + "\n");'
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+
+      - name: Install extension dependencies
+        shell: bash
+        working-directory: extension
+        run: |
+          set -euo pipefail
+          npm ci
+
+      - name: Build VSIX with vsce
+        shell: bash
+        working-directory: extension
+        run: |
+          set -euo pipefail
+          npx vsce package --out "../${{ steps.meta.outputs.file_name }}"
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
@@ -55,6 +73,16 @@ jobs:
           name: ${{ steps.meta.outputs.file_name }}
           path: ${{ steps.meta.outputs.file_name }}
           if-no-files-found: error
+
+      # - name: Publish to Visual Studio Marketplace
+      #   if: github.ref_type == 'tag'
+      #   shell: bash
+      #   working-directory: extension
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      #   run: |
+      #     set -euo pipefail
+      #     npx vsce publish --packagePath "../${{ steps.meta.outputs.file_name }}"
 
       - name: Upload VSIX to GitHub Release
         if: github.ref_type == 'tag'
