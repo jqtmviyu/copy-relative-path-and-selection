@@ -6,7 +6,6 @@ const vscode = require("vscode");
 // your extension is activated the very first time the command is executed
 function activate(context) {
   let alertMessage = "File path not found!";
-  let selectionCache = new Map();
 
   let getEditorState = function (editor) {
     if (!editor) {
@@ -92,12 +91,11 @@ function activate(context) {
     return {
       ...state,
       ranges,
-      updatedAt: Date.now(),
     };
   };
 
   let buildBlocks = function (entry, useAbsolutePath = false) {
-    return entry.ranges
+    let blocks = entry.ranges
       .map((range) => {
         let path = useAbsolutePath ? entry.absolutePath : entry.relativePath;
         let header = `${path}:${range.start}-${range.end}`;
@@ -111,54 +109,22 @@ function activate(context) {
         return `${header}\n\`\`\`\n${code}\n\`\`\`\n`;
       })
       .join("\n");
-  };
 
-  let syncSelectionCache = function (editor) {
-    if (!editor) {
-      return;
-    }
-
-    let key = editor.document.uri.toString();
-    let entry = getSelectionEntry(editor);
-
-    if (!entry) {
-      selectionCache.delete(key);
-      return;
-    }
-
-    selectionCache.set(key, entry);
+    return `\n${blocks}`;
   };
 
   let copyPathLines = function (withLineNumber = false, useAbsolutePath = false) {
     let editor = vscode.window.activeTextEditor;
 
     if (withLineNumber) {
-      let entries = new Map(selectionCache);
-      let activeEntry = getSelectionEntry(editor);
+      let entry = getSelectionEntry(editor) || getSelectionEntry(editor, true);
 
-      if (activeEntry) {
-        let cachedEntry = entries.get(activeEntry.key);
-        if (cachedEntry) {
-          activeEntry.updatedAt = cachedEntry.updatedAt;
-        }
-        entries.set(activeEntry.key, activeEntry);
-      } else {
-        let temporaryEntry = getSelectionEntry(editor, true);
-        if (temporaryEntry) {
-          entries.set(temporaryEntry.key, temporaryEntry);
-        }
-      }
-
-      let blocks = Array.from(entries.values())
-        .sort((a, b) => a.updatedAt - b.updatedAt)
-        .map((entry) => buildBlocks(entry, useAbsolutePath));
-
-      if (!blocks.length) {
+      if (!entry) {
         vscode.window.showWarningMessage(alertMessage);
         return false;
       }
 
-      return blocks.join("\n");
+      return buildBlocks(entry, useAbsolutePath);
     } else {
       let state = getEditorState(editor);
       if (!state) {
@@ -177,78 +143,56 @@ function activate(context) {
     );
   };
 
+  let copyToClipboard = function (message) {
+    if (message === false) {
+      return;
+    }
+
+    vscode.env.clipboard.writeText(message).then(() => {
+      toast(message);
+    });
+  };
+
+  let registerCopyCommand = function (command, withLineNumber, useAbsolutePath) {
+    return vscode.commands.registerCommand(command, () => {
+      copyToClipboard(copyPathLines(withLineNumber, useAbsolutePath));
+    });
+  };
+
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
     'Congratulations, your extension "copy-relative-path-and-line-numbers" is now active!'
   );
 
-  let onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
-    (event) => {
-      syncSelectionCache(event.textEditor);
-    }
-  );
-
-  let onDidCloseTextDocument = vscode.workspace.onDidCloseTextDocument((doc) => {
-    selectionCache.delete(doc.uri.toString());
-  });
-
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
-  let cmdAbsoluteSelection = vscode.commands.registerCommand(
+  let cmdAbsoluteSelection = registerCopyCommand(
     "copy-relative-path-and-line-numbers.absolute-selection",
-    () => {
-      let message = copyPathLines(true, true);
-      if (message !== false) {
-        vscode.env.clipboard.writeText(message).then(() => {
-          selectionCache.clear();
-          toast(message);
-        });
-      }
-    }
+    true,
+    true
   );
 
-  let cmdRelativeSelection = vscode.commands.registerCommand(
+  let cmdRelativeSelection = registerCopyCommand(
     "copy-relative-path-and-line-numbers.relative-selection",
-    () => {
-      let message = copyPathLines(true, false);
-      if (message !== false) {
-        vscode.env.clipboard.writeText(message).then(() => {
-          selectionCache.clear();
-          toast(message);
-        });
-      }
-    }
+    true,
+    false
   );
 
-  let cmdAbsolutePath = vscode.commands.registerCommand(
+  let cmdAbsolutePath = registerCopyCommand(
     "copy-relative-path-and-line-numbers.absolute-path",
-    () => {
-      let message = copyPathLines(false, true);
-      if (message !== false) {
-        vscode.env.clipboard.writeText(message).then(() => {
-          toast(message);
-        });
-      }
-    }
+    false,
+    true
   );
 
-  let cmdRelativePath = vscode.commands.registerCommand(
+  let cmdRelativePath = registerCopyCommand(
     "copy-relative-path-and-line-numbers.relative-path",
-    () => {
-      let message = copyPathLines(false, false);
-      if (message !== false) {
-        vscode.env.clipboard.writeText(message).then(() => {
-          toast(message);
-        });
-      }
-    }
+    false,
+    false
   );
 
   context.subscriptions.push(
-    onDidChangeTextEditorSelection,
-    onDidCloseTextDocument,
     cmdAbsoluteSelection,
     cmdRelativeSelection,
     cmdAbsolutePath,
