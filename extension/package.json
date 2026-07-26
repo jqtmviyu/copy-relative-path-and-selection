@@ -2,7 +2,7 @@
   "name": "copy-relative-path-and-line-numbers",
   "displayName": "Copy: Path and Selection",
   "description": "Copy current file paths or selected code as AI-ready context with absolute or relative paths. Supports multi-cursor and multi-selection within the active file.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "jqtmviyu",
   "author": "jqtmviyu",
   "license": "MIT",

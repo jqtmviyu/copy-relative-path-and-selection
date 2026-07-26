@@ -106,7 +106,7 @@ function activate(context) {
         }
 
         let code = codeLines.join("\n");
-        return `${header}\n\`\`\`\n${code}\n\`\`\`\n`;
+        return `${header}\n\`\`\`\`\n${code}\n\`\`\`\`\n`;
       })
       .join("\n");
 
