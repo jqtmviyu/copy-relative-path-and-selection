@@ -106,11 +106,13 @@ function activate(context) {
         }
 
         let code = codeLines.join("\n");
-        return `${header}\n\`\`\`\`\n${code}\n\`\`\`\`\n`;
+        return `${header}\n\`\`\`\`\n${code}\n\`\`\`\``;
       })
-      .join("\n");
+      .join("\n\n");
 
-    return `\n${blocks}`;
+    // 首尾不能是换行：终端 agent（Claude Code、Codex）会把粘贴内容边界处的换行
+    // 当作回车，从而提前提交。块之间的空行属于内部换行，不受影响。
+    return blocks;
   };
 
   let copyPathLines = function (withLineNumber = false, useAbsolutePath = false) {
